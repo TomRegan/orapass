@@ -1,0 +1,101 @@
+#! /bin/bash
+
+##
+## Oracle key derivation function
+##
+function _derive_key {
+    local pass=$1
+    salt=051399429372e8ad
+    key="`echo -n $pass | xxd -p`$salt"
+    for i in {1..42}
+    do
+	key=$(echo -n $key | xxd -revert -plain | md5sum)
+    done
+    echo $(echo -n $key | cut -d ' ' -f 1)
+}
+
+function _secret_key {
+    local key=$1
+    echo $(echo -n $key \
+	       | xxd -plain -revert \
+	       | cut -b1-8 \
+	       | tr --delete [:space:] \
+	       | xxd -plain)
+}
+
+function _iv {
+    local iv=$1
+    echo $(echo -n $key \
+	       | xxd -revert -plain \
+	       | cut -b9- \
+	       | tr --delete [:space:] \
+	       | xxd -plain)
+}
+
+##
+## Decrypt des-cbc encrypted password
+##
+function _decrypt {
+    local secret_key=$1
+    local iv=$2
+    local cypher_text=$3
+    echo $(echo -n $cypher_text \
+	       | openssl enc -d -des-cbc -a -A -K $secret_key -iv $iv)
+}
+
+##
+## Tests
+##
+if [ ! -z $unittest ]
+then
+    echo "TestKeyIsDerived"
+    expect_key=8038ddc176ac45736352a143e0ce5fb4
+    key=$(_derive_key pass)
+    test $key = $expect_key \
+	&& echo -e "\e[32mpassed ($key = $expect_key)\e[0m" \
+	    || echo -e "\e[31mfailed, expected key = $expect_key but got $key\e[0m"
+
+    echo "TestSecretKeyIsDerived"
+    expect_secret_key=8038ddc176ac4573
+    secret_key=$(_secret_key $key)
+    test $secret_key = $expect_secret_key \
+	 && echo -e "\e[32mpassed ($secret_key = $expect_secret_key)\e[0m" \
+	     || echo -e "\e[31mfailed, expected secret_key = $expect_secret_key but got $secret_key\e[0m"
+
+    echo "TestIVIsDerived"
+    expect_iv=6352a143e0ce5fb4
+    iv=$(_iv $key)
+    test $iv = $expect_iv \
+	 && echo -e "\e[32mpassed ($iv = $expect_iv)\e[0m" \
+	     || echo -e "\e[31mfailed, expected iv = $expect_iv but got $iv\e[0m"
+
+    echo "TestDecrypt"
+    expect_plain_text=myPass2
+    plain_text=$(_decrypt $secret_key $iv mr1Ve8X3UXQ=)
+    test $plain_text = $expect_plain_text \
+	 && echo -e "\e[32mpassed ($plain_text = $expect_plain_text)\e[0m" \
+	     || echo -e "\e[31mfailed, expected plain_text = $expect_plain_text but got $plain_text\e[0m"
+
+    exit 0
+fi
+
+
+##
+## Main
+##
+if [ -z $1 ] || [ -z $2 ]
+then
+    echo "usage: `basename $0` CYPHERTEXT KEY"
+    exit 1
+fi
+
+cypher_text=$1
+pass=$2
+
+key=$(_derive_key $pass)
+plain_text=$(_decrypt $(_secret_key $key) $(_iv $key) $cypher_text)
+
+if [ ! -z $plain_text ]
+then
+    echo $plain_text
+fi
