@@ -1,10 +1,25 @@
 all: help
 
 .PHONY: install
-install: ## install orapass
+install: man ## install orapass
 	@mkdir -p /usr/lib/orapass
 	@cp ./lib/orapass /usr/lib/orapass/orapass
-	@ln -s /usr/lib/orapass/orapass /usr/bin/orapass
+	@ln -s -f /usr/lib/orapass/orapass /usr/bin/orapass
+	@mkdir -p /usr/share/man1/			
+	@cp /tmp/orapass_build/orapass.1 /usr/share/man1/orapass.1
+
+.PHONY: local-install
+local-install: man ## install orapass
+	@mkdir -p /usr/local/lib/orapass
+	@cp ./lib/orapass /usr/local/lib/orapass/orapass
+	@ln -s -f /usr/local/lib/orapass/orapass /usr/local/bin/orapass
+	@mkdir -p /usr/local/share/man/man1/
+	@cp /tmp/orapass_build/orapass.1 /usr/local/share/man/man1/orapass.1
+
+.PHONY: man
+man:
+	@mkdir -p /tmp/orapass_build/
+	@pandoc -s -t man -o /tmp/orapass_build/orapass.1 man/orapass.1.md
 
 .PHONY: test
 test: ## run unit tests

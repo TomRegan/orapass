@@ -52,29 +52,29 @@ then
     expect_key=8038ddc176ac45736352a143e0ce5fb4
     key=$(_derive_key pass)
     test $key = $expect_key \
-	&& echo -e "\e[32mpassed ($key = $expect_key)\e[0m" \
-	    || echo -e "\e[31mfailed, expected key = $expect_key but got $key\e[0m"
+	&& echo -e "\033[32mpassed ($key = $expect_key)\033[0m" \
+	    || echo -e "\033[31mfailed, expected key = $expect_key but got $key\033[0m"
 
     echo "TestSecretKeyIsDerived"
     expect_secret_key=8038ddc176ac4573
     secret_key=$(_secret_key $key)
     test $secret_key = $expect_secret_key \
-	 && echo -e "\e[32mpassed ($secret_key = $expect_secret_key)\e[0m" \
-	     || echo -e "\e[31mfailed, expected secret_key = $expect_secret_key but got $secret_key\e[0m"
+	 && echo -e "\033[32mpassed ($secret_key = $expect_secret_key)\033[0m" \
+	     || echo -e "\033[31mfailed, expected secret_key = $expect_secret_key but got $secret_key\033[0m"
 
     echo "TestIVIsDerived"
     expect_iv=6352a143e0ce5fb4
     iv=$(_iv $key)
     test $iv = $expect_iv \
-	 && echo -e "\e[32mpassed ($iv = $expect_iv)\e[0m" \
-	     || echo -e "\e[31mfailed, expected iv = $expect_iv but got $iv\e[0m"
+	 && echo -e "\033[32mpassed ($iv = $expect_iv)\033[0m" \
+	     || echo -e "\033[31mfailed, expected iv = $expect_iv but got $iv\033[0m"
 
     echo "TestDecrypt"
     expect_plain_text=myPass2
     plain_text=$(_decrypt $secret_key $iv mr1Ve8X3UXQ=)
     test $plain_text = $expect_plain_text \
-	 && echo -e "\e[32mpassed ($plain_text = $expect_plain_text)\e[0m" \
-	     || echo -e "\e[31mfailed, expected plain_text = $expect_plain_text but got $plain_text\e[0m"
+	 && echo -e "\033[32mpassed ($plain_text = $expect_plain_text)\033[0m" \
+	     || echo -e "\033[31mfailed, expected plain_text = $expect_plain_text but got $plain_text\033[0m"
 
     exit 0
 fi
