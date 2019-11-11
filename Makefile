@@ -6,7 +6,7 @@ install: man ## install orapass
 	@cp ./lib/orapass /usr/lib/orapass/orapass
 	@ln -s -f /usr/lib/orapass/orapass /usr/bin/orapass
 	@mkdir -p /usr/share/man1/			
-	@cp /tmp/orapass_build/orapass.1 /usr/share/man/man1/orapass.1
+	@cp /tmp/orapass_build/orapass.1.gz /usr/share/man/man1/orapass.1.gz
 
 .PHONY: local-install
 local-install: man ## install orapass
@@ -14,12 +14,12 @@ local-install: man ## install orapass
 	@cp ./lib/orapass /usr/local/lib/orapass/orapass
 	@ln -s -f /usr/local/lib/orapass/orapass /usr/local/bin/orapass
 	@mkdir -p /usr/local/share/man/man1/
-	@cp /tmp/orapass_build/orapass.1 /usr/local/share/man/man1/orapass.1
+	@cp /tmp/orapass_build/orapass.1.gz /usr/local/share/man/man1/orapass.1.gz
 
 .PHONY: man
 man:
 	@mkdir -p /tmp/orapass_build/
-	@pandoc -s -t man -o /tmp/orapass_build/orapass.1 man/orapass.1.md
+	@pandoc -s -t man man/orapass.1.md | gzip > /tmp/orapass_build/orapass.1.gz 
 
 .PHONY: test
 test: ## run unit tests
