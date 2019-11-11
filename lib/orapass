@@ -44,6 +44,17 @@ function _decrypt {
 }
 
 ##
+## Encrypt password with des-cbc
+##
+function _encrypt {
+    local secret_key=$1
+    local iv=$2
+    local plain_text=$3
+    echo $(echo -n $plain_text \
+	       | openssl enc -e -des-cbc -a -A -K $secret_key -iv $iv)
+}
+
+##
 ## Tests
 ##
 if [ ! -z $unittest ]
@@ -76,8 +87,19 @@ then
 	 && echo -e "\033[32mpassed ($plain_text = $expect_plain_text)\033[0m" \
 	     || echo -e "\033[31mfailed, expected plain_text = $expect_plain_text but got $plain_text\033[0m"
 
+    echo "TestEncrypt"
+    expect_cypher_text=mr1Ve8X3UXQ=
+    cypher_text=$(_encrypt $secret_key $iv myPass2)
+    test $cypher_text = $expect_cypher_text \
+	 && echo -e "\033[32mpassed ($cypher_text = $expect_cypher_text)\033[0m" \
+	     || echo -e "\033[31mfailed, expected cypher_text = $expect_cypher_text but got $cypher_text\033[0m"
+
     exit 0
 fi
+
+function _usage {
+    echo "usage: `basename $0` [encrypt|decrypt] TEXT KEY"
+}
 
 
 ##
@@ -85,17 +107,39 @@ fi
 ##
 if [ -z $1 ] || [ -z $2 ]
 then
-    echo "usage: `basename $0` CYPHERTEXT KEY"
+    _usage
     exit 1
 fi
 
-cypher_text=$1
-pass=$2
-
-key=$(_derive_key $pass)
-plain_text=$(_decrypt $(_secret_key $key) $(_iv $key) $cypher_text)
-
-if [ ! -z $plain_text ]
+if [ $1 = "encrypt" ] && [ ! -z $3 ]
 then
-    echo $plain_text
+    MODE=encrypt
+    shift
+elif [ $1 = "decrypt" ] && [ ! -z $3 ]
+then
+    MODE=decrypt
+    shift
 fi
+text=$1
+pass=$2
+key=$(_derive_key $pass)
+
+case $MODE in
+    "encrypt")
+	cypher_text=$(_encrypt $(_secret_key $key) $(_iv $key) $text)
+	if [ ! -z $cypher_text ]
+	then
+	    echo $cypher_text
+	fi
+	;;
+    "decrypt")
+	plain_text=$(_decrypt $(_secret_key $key) $(_iv $key) $text)
+	if [ ! -z $plain_text ]
+	then
+	    echo $plain_text
+	fi
+	;;
+    *)
+	_usage
+	;;
+esac
