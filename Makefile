@@ -6,7 +6,7 @@ install: man ## install orapass
 	@cp ./lib/orapass /usr/lib/orapass/orapass
 	@ln -s -f /usr/lib/orapass/orapass /usr/bin/orapass
 	@mkdir -p /usr/share/man1/			
-	@cp /tmp/orapass_build/orapass.1 /usr/share/man1/orapass.1
+	@cp /tmp/orapass_build/orapass.1 /usr/share/man/man1/orapass.1
 
 .PHONY: local-install
 local-install: man ## install orapass
